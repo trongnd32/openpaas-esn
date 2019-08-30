@@ -1,27 +1,27 @@
 'use strict';
 
-var request = require('supertest'),
+const request = require('supertest'),
   expect = require('chai').expect,
   async = require('async');
 
 describe('The user notification API', function() {
 
-  var app;
-  var testuser;
-  var testuser1;
-  var domain;
-  var community;
-  var password = 'secret';
-  var email = 'foo@bar.com';
-  var email1 = 'test1@bar.com';
+  let app;
+  let testuser;
+  let testuser1;
+  let domain;
+  let collaboration;
+  const password = 'secret';
+  const email = 'foo@bar.com';
+  const email1 = 'test1@bar.com';
 
   var UserNotification;
 
   function saveNotification(target, read, cb) {
     var notification = new UserNotification({
       subject: {
-        id: community._id,
-        objectType: 'community'
+        id: collaboration._id,
+        objectType: 'collaboration'
       },
       verb: {
         label: 'created',
@@ -29,7 +29,7 @@ describe('The user notification API', function() {
       },
       complement: {
         id: 456,
-        objectType: 'community'
+        objectType: 'collaboration'
       },
       category: 'A category',
       read: read
@@ -42,12 +42,14 @@ describe('The user notification API', function() {
   }
 
   beforeEach(function(done) {
-    var self = this;
+    const self = this;
+
     this.testEnv.initCore(function() {
       app = self.helpers.requireBackend('webserver/application');
       self.mongoose = require('mongoose');
-      var User = self.helpers.requireBackend('core/db/mongo/models/user');
-      var Domain = self.helpers.requireBackend('core/db/mongo/models/domain');
+      const User = self.helpers.requireBackend('core/db/mongo/models/user');
+      const Domain = self.helpers.requireBackend('core/db/mongo/models/domain');
+
       UserNotification = self.helpers.requireBackend('core/db/mongo/models/usernotification');
 
       testuser = new User({
@@ -80,6 +82,7 @@ describe('The user notification API', function() {
           if (saved) {
             user._id = saved._id;
           }
+
           return cb(err, saved);
         });
       }
@@ -88,6 +91,7 @@ describe('The user notification API', function() {
         domain.administrators = [{ user_id: user }];
         domain.save(function(err, saved) {
           domain._id = saved._id;
+
           return cb(err, saved);
         });
       }
@@ -103,12 +107,12 @@ describe('The user notification API', function() {
             saveDomain(domain, testuser, callback);
           },
           function(callback) {
-            self.helpers.api.createCommunity('community1', testuser, domain, function(err, saved) {
+            self.helpers.api.createCollaboration('collaboration1', testuser, domain, function(err, saved) {
               if (err) {
                 return callback(err);
               }
-              community = saved;
-              callback(null, community);
+              collaboration = saved;
+              callback(null, collaboration);
             });
           }
         ],
@@ -130,8 +134,8 @@ describe('The user notification API', function() {
   });
 
   it('should get HTTP 200 with empty array when no notifications are available', function(done) {
+    const self = this;
 
-    var self = this;
     async.series([
         function(callback) {
           saveNotification(testuser, false, callback);
@@ -146,7 +150,8 @@ describe('The user notification API', function() {
           if (err) {
             return done(err);
           }
-          var req = requestAsMember(request(app).get('/api/user/notifications'));
+          const req = requestAsMember(request(app).get('/api/user/notifications'));
+
           req.expect(200);
           req.end(function(err, res) {
             expect(err).to.not.exist;
@@ -161,8 +166,8 @@ describe('The user notification API', function() {
   });
 
   it('should get HTTP 200 with current user notifications', function(done) {
+    const self = this;
 
-    var self = this;
     async.series([
         function(callback) {
           saveNotification(testuser1, false, callback);
@@ -183,7 +188,8 @@ describe('The user notification API', function() {
           if (err) {
             return done(err);
           }
-          var req = requestAsMember(request(app).get('/api/user/notifications'));
+          const req = requestAsMember(request(app).get('/api/user/notifications'));
+
           req.expect(200);
           req.end(function(err, res) {
             expect(err).to.not.exist;
@@ -198,8 +204,8 @@ describe('The user notification API', function() {
   });
 
   it('should get HTTP 200 with unread user notifications', function(done) {
+    const self = this;
 
-    var self = this;
     async.series([
         function(callback) {
           saveNotification(testuser1, true, callback);
@@ -220,8 +226,9 @@ describe('The user notification API', function() {
           if (err) {
             return done(err);
           }
-          var req = requestAsMember(request(app).get('/api/user/notifications'));
-          req.query({read: 'false'});
+          const req = requestAsMember(request(app).get('/api/user/notifications'));
+
+          req.query({ read: 'false' });
           req.expect(200);
           req.end(function(err, res) {
             expect(err).to.not.exist;
@@ -237,7 +244,8 @@ describe('The user notification API', function() {
 
   it('should get HTTP 200 with read user notifications', function(done) {
 
-    var self = this;
+    const self = this;
+
     async.series([
         function(callback) {
           saveNotification(testuser1, true, callback);
@@ -258,8 +266,9 @@ describe('The user notification API', function() {
           if (err) {
             return done(err);
           }
-          var req = requestAsMember(request(app).get('/api/user/notifications'));
-          req.query({read: 'true'});
+          const req = requestAsMember(request(app).get('/api/user/notifications'));
+
+          req.query({ read: 'true' });
           req.expect(200);
           req.end(function(err, res) {
             expect(err).to.not.exist;
@@ -274,8 +283,8 @@ describe('The user notification API', function() {
   });
 
   it('should get HTTP 200 with defined limit/offset user notifications', function(done) {
+    const self = this;
 
-    var self = this;
     async.series([
         function(callback) {
           saveNotification(testuser1, false, callback);
@@ -302,8 +311,9 @@ describe('The user notification API', function() {
           if (err) {
             return done(err);
           }
-          var req = requestAsMember(request(app).get('/api/user/notifications'));
-          req.query({read: 'false', limit: 2, offset: 2});
+          const req = requestAsMember(request(app).get('/api/user/notifications'));
+
+          req.query({ read: 'false', limit: 2, offset: 2 });
           req.expect(200);
           req.end(function(err, res) {
             expect(err).to.not.exist;
@@ -327,7 +337,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -341,7 +352,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body.value is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -369,7 +381,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 403 if user is not allowed', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -386,7 +399,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 205 if could set read to true', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -413,7 +427,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function() {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -427,7 +442,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body.value is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function() {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -458,7 +474,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 403 if user is not allowed', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -475,8 +492,9 @@ describe('The user notification API', function() {
     });
 
     it('should return 205 if could set read to true for all usernotifications', function(done) {
-      var self = this;
-      var saved1, saved2, saved3;
+      const self = this;
+      let saved1, saved2, saved3;
+
       async.series([
         function(callback) {
           saveNotification(testuser1, false, function(err, saved) {
@@ -525,7 +543,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -539,7 +558,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 400 if req.body.value is not defined', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -567,7 +587,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 403 if user is not allowed', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
         self.helpers.api.loginAsUser(app, testuser.emails[0], password, function(err, requestAsMember) {
           if (err) {
@@ -584,7 +605,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 205 if could set read to true', function(done) {
-      var self = this;
+      const self = this;
+
       saveNotification(testuser1, false, function(err, saved) {
 
         self.helpers.api.loginAsUser(app, testuser1.emails[0], password, function(err, requestAsMember) {
@@ -613,7 +635,8 @@ describe('The user notification API', function() {
     });
 
     it('should return 200 and the unread count if it success', function(done) {
-      var self = this;
+      const self = this;
+
       async.series([
         saveNotification.bind(null, testuser1, false),
         saveNotification.bind(null, testuser1, false),

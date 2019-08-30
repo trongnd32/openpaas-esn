@@ -30,6 +30,7 @@ describe('The timelineentries API', function() {
             }
             defer.resolve(saved);
           });
+
           return defer.promise;
         }
 

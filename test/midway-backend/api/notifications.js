@@ -68,6 +68,7 @@ describe('The notification API', function() {
           if (saved) {
             user._id = saved._id;
           }
+
           return cb(err, saved);
         });
       }
@@ -76,6 +77,7 @@ describe('The notification API', function() {
         domain.administrators = [{ user_id: user }];
         domain.save(function(err, saved) {
           domain._id = saved._id;
+
           return cb(err, saved);
         });
       }
@@ -94,7 +96,7 @@ describe('The notification API', function() {
             saveDomain(domain, testuser, callback);
           },
           function(callback) {
-            self.helpers.api.createCommunity('community1', testuser, domain, function(err, saved) {
+            self.helpers.api.createCollaboration('collaboration1', testuser, domain, function(err, saved) {
               if (err) {
                 return callback(err);
               }
@@ -123,7 +125,7 @@ describe('The notification API', function() {
   it('should return HTTP 201 with the created notification on POST /api/notifications', function(done) {
     request(app)
       .post('/api/login')
-      .send({username: email, password: password, rememberme: true})
+      .send({ username: email, password: password, rememberme: true })
       .expect(200)
       .end(function(err, res) {
         var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -135,7 +137,7 @@ describe('The notification API', function() {
           action: 'create',
           object: 'form',
           link: 'http://localhost:8888',
-          target: [{objectType: 'user', id: testuser._id}]
+          target: [{ objectType: 'user', id: testuser._id }]
         });
         req.expect(201)
           .end(function(err, res) {
@@ -149,7 +151,7 @@ describe('The notification API', function() {
   it('should return HTTP 201 with the created notification on POST /api/notifications with community as target', function(done) {
     request(app)
       .post('/api/login')
-      .send({username: email, password: password, rememberme: true})
+      .send({ username: email, password: password, rememberme: true })
       .expect(200)
       .end(function(err, res) {
         var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -161,7 +163,7 @@ describe('The notification API', function() {
           action: 'create',
           object: 'form',
           link: 'http://localhost:8888',
-          target: [{objectType: 'community', id: community._id}]
+          target: [{ objectType: 'collaboration', id: community._id }]
         });
         req.expect(201);
         req.end(function(err, res) {
@@ -185,7 +187,7 @@ describe('The notification API', function() {
 
     request(app)
       .post('/api/login')
-      .send({username: email, password: password, rememberme: true})
+      .send({ username: email, password: password, rememberme: true })
       .expect(200)
       .end(function(err, res) {
         var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -197,7 +199,7 @@ describe('The notification API', function() {
           action: 'create',
           object: 'form',
           link: 'http://localhost:8888',
-          target: [{objectType: 'user', id: testuser1._id}, {objectType: 'user', id: testuser2._id}]
+          target: [{ objectType: 'user', id: testuser1._id }, { objectType: 'user', id: testuser2._id }]
         });
         req.expect(201)
           .end(function(err) {
@@ -215,7 +217,7 @@ describe('The notification API', function() {
       action: 'create',
       object: 'form',
       link: 'http://localhost:8888',
-      target: [{objectType: 'user', id: testuser._id}]
+      target: [{ objectType: 'user', id: testuser._id }]
     });
 
     n.save(function(err, _n) {
@@ -226,7 +228,7 @@ describe('The notification API', function() {
 
       request(app)
         .post('/api/login')
-        .send({username: email, password: password, rememberme: true})
+        .send({ username: email, password: password, rememberme: true })
         .expect(200)
         .end(function(err, res) {
           var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -255,7 +257,7 @@ describe('The notification API', function() {
       });
 
       if (target) {
-        notification.target = [{objectType: 'user', id: target._id}];
+        notification.target = [{ objectType: 'user', id: target._id }];
       }
 
       if (author) {
@@ -282,7 +284,7 @@ describe('The notification API', function() {
 
         request(app)
           .post('/api/login')
-          .send({username: email, password: password, rememberme: true})
+          .send({ username: email, password: password, rememberme: true })
           .expect(200)
           .end(function(err, res) {
             var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -309,7 +311,7 @@ describe('The notification API', function() {
       action: 'create',
       object: 'form',
       link: 'http://localhost:8888',
-      target: [{objectType: 'user', id: testuser._id}]
+      target: [{ objectType: 'user', id: testuser._id }]
     });
 
     n.save(function(err, _n) {
@@ -320,7 +322,7 @@ describe('The notification API', function() {
 
       request(app)
         .post('/api/login')
-        .send({username: email, password: password, rememberme: true})
+        .send({ username: email, password: password, rememberme: true })
         .expect(200)
         .end(function(err, res) {
           var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -360,7 +362,7 @@ describe('The notification API', function() {
       });
 
       if (target) {
-        notification.target = [{objectType: 'user', id: target._id}];
+        notification.target = [{ objectType: 'user', id: target._id }];
       }
 
       if (author) {
@@ -387,7 +389,7 @@ describe('The notification API', function() {
 
         request(app)
           .post('/api/login')
-          .send({username: email, password: password, rememberme: true})
+          .send({ username: email, password: password, rememberme: true })
           .expect(200)
           .end(function(err, res) {
             var cookies = res.headers['set-cookie'].pop().split(';')[0];
@@ -414,7 +416,7 @@ describe('The notification API', function() {
       action: 'create',
       object: 'form',
       link: 'http://localhost:8888',
-      target: [{objectType: 'user', id: testuser1._id}]
+      target: [{ objectType: 'user', id: testuser1._id }]
     });
 
     n.save(function(err, _n) {
@@ -425,7 +427,7 @@ describe('The notification API', function() {
 
       request(app)
         .post('/api/login')
-        .send({username: email, password: password, rememberme: true})
+        .send({ username: email, password: password, rememberme: true })
         .expect(200)
         .end(function(err, res) {
           var cookies = res.headers['set-cookie'].pop().split(';')[0];

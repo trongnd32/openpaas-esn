@@ -122,7 +122,6 @@
     "linagora.esn.davserver",
     "linagora.esn.dav.import",
     "linagora.esn.digest.daily",
-    "linagora.esn.jobqueue",
     "linagora.esn.graceperiod",
     "linagora.esn.messaging.email",
     "linagora.esn.oauth.consumer",

@@ -158,6 +158,7 @@ function getStreamsForUser(userId, options, callback) {
   function finder(type, callback) {
     collaborationLibs[type].getStreamsForUser(userId, options, (err, streams) => {
       if (err || !streams || !streams.length) {
+
         return callback();
       }
 

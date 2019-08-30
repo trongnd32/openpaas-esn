@@ -10,8 +10,6 @@ describe('The message core module', function() {
     this.helpers.requireBackend('core/db/mongo/models/resource-link');
     this.helpers.requireBackend('core/db/mongo/models/emailmessage');
     this.helpers.requireBackend('core/db/mongo/models/whatsup');
-    this.helpers.requireBackend('core/db/mongo/models/community');
-    this.helpers.requireBackend('core/db/mongo/models/community-archive');
     this.helpers.requireBackend('core/db/mongo/models/domain');
     this.helpers.requireBackend('core/db/mongo/models/notification');
     this.helpers.requireBackend('core/db/mongo/models/usernotification');
@@ -99,6 +97,7 @@ describe('The message core module', function() {
               self.findOneCb = callback;
             }
           };
+
           return ModelMock;
         };
         this.mongoose.Types.ObjectId = function(name) { return {name: name + 'ObjectId'}; };
@@ -258,7 +257,8 @@ describe('The message core module', function() {
       var messageModule = this.helpers.requireBackend('core/message');
       this.mongoose.model = function(name) {
         expect(name).to.equal('Whatsup');
-        return function() {
+
+return function() {
           return {ok: true};
         };
       };
@@ -286,7 +286,8 @@ describe('The message core module', function() {
             return callback(new Error('failed'), null);
           }
         };
-        return ModelMock;
+
+return ModelMock;
       };
       messageModule.addNewComment({}, {}, function(err) {
         expect(err).to.be.ok;
@@ -312,7 +313,8 @@ describe('The message core module', function() {
             return callback(null, {objectType: 'whatsup'});
           }
         };
-        return ModelMock;
+
+return ModelMock;
       };
       messageModule.addNewComment({}, {}, function() { });
     });
@@ -350,7 +352,8 @@ describe('The message core module', function() {
               return callback(null, {objectType: 'whatsup'});
             }
           };
-          return ModelMock;
+
+return ModelMock;
         };
         messageModule.addNewComment({_id: 'comment1'}, {objectType: 'test', _id: 'parent1'}, function() { self.ancCallback.apply(this, arguments); });
       });
@@ -427,7 +430,8 @@ describe('The message core module', function() {
             }
           };
         }
-        return {
+
+return {
           find: function() {
             return {
               exec: function(callback) {
@@ -458,7 +462,8 @@ describe('The message core module', function() {
               expect(query._id.$in).to.exist;
               expect(query._id.$in.indexOf('3')).to.equal(0);
               expect(query._id.$in.indexOf('4')).to.equal(1);
-              return {
+
+return {
                 exec: function() {
                   done();
                 }
@@ -466,7 +471,8 @@ describe('The message core module', function() {
             }
           };
         }
-        return {
+
+return {
           find: function() {
             return {
               exec: function(callback) {
@@ -488,7 +494,8 @@ describe('The message core module', function() {
               expect(query._id.$in).to.exist;
               expect(query._id.$in.indexOf('3')).to.equal(0);
               expect(query._id.$in.indexOf('4')).to.equal(1);
-              return {
+
+return {
                 exec: function(callback) {
                   callback(new Error('db search error'));
                 }
@@ -496,7 +503,8 @@ describe('The message core module', function() {
             }
           };
         }
-        return {
+
+return {
           find: function() {
             return {
               exec: function(callback) {
@@ -531,7 +539,8 @@ describe('The message core module', function() {
               expect(query._id.$in).to.exist;
               expect(query._id.$in.indexOf('3')).to.equal(0);
               expect(query._id.$in.indexOf('4')).to.equal(1);
-              return {
+
+return {
                 exec: function(callback) {
                   callback(null, [user3, user4]);
                 }
@@ -557,7 +566,8 @@ describe('The message core module', function() {
               }
             };
           };
-          return messageModel;
+
+return messageModel;
         }
       };
       messageModule.findByIds(['1', '2'], function(err, result) {

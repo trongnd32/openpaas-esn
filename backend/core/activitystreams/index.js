@@ -10,6 +10,7 @@ function getTimelineEntry(id, callback) {
   if (!id) {
     return callback(new Error('Timeline entry ID is required'));
   }
+
   return TimelineEntry.findById(id).exec(callback);
 }
 module.exports.getTimelineEntry = getTimelineEntry;
@@ -25,6 +26,7 @@ function getUserStreams(user, options, callback) {
   }
 
   var userId = user._id;
+
   collaboration.getStreamsForUser(userId, options || {}, function(err, streams) {
     if (err) {
       logger.warn('Problem while getting user streams : ' + err.message);
@@ -32,6 +34,7 @@ function getUserStreams(user, options, callback) {
     if (!err && streams) {
       return callback(null, streams);
     }
+
     return callback(null, []);
   });
 }
@@ -44,7 +47,6 @@ module.exports.getUserStreams = getUserStreams;
  * @param {Function} cb
  */
 function query(options, cb) {
-
   if (!options) {
     return cb(new Error('Options is mandatory'));
   }
@@ -62,6 +64,7 @@ function query(options, cb) {
       if (err) {
         return callback(err);
       }
+
       return callback(null, results.map(helpers.timelineToActivity));
     });
   };
@@ -82,8 +85,10 @@ function query(options, cb) {
         return getEntries(q, cb);
       }
       q.where({published: {$gt: after.published}});
+
       return getEntries(q, cb);
     });
+
     return;
   } else {
     q.sort({published: -1});
@@ -100,6 +105,7 @@ function query(options, cb) {
       }
 
       q.where({published: {$lt: before.published}});
+
       return getEntries(q, cb);
     });
   } else {
@@ -184,6 +190,7 @@ function addTimelineEntry(entry, cb) {
   }
 
   var timelineEntry = new TimelineEntry(entry);
+
   return timelineEntry.save(cb);
 }
 module.exports.addTimelineEntry = addTimelineEntry;
@@ -219,6 +226,7 @@ function getTimelineEntryFromStreamMessage(activitystream, message, callback) {
       _id: message._id
     }
   };
+
   return TimelineEntry.findOne(query, callback);
 }
 module.exports.getTimelineEntryFromStreamMessage = getTimelineEntryFromStreamMessage;

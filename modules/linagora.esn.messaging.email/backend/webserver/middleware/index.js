@@ -32,6 +32,7 @@ module.exports = function(dependencies, lib) {
           return res.status(403).json({error: {status: 403, message: 'Forbidden', details: 'User does not have enough rights to reply to the message'}});
         }
         req.replyTo = replyTo;
+
         return next();
       });
     });

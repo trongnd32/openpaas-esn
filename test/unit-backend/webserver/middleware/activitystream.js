@@ -14,13 +14,14 @@ describe('The activitystream middleware', function() {
   describe('The isValidStream fn', function() {
     it('should send back 400 if req.query.objectType is not set', function(done) {
       this.helpers.mock.models({
-        Community: {
+        Collaboration: {
           getFromActivityStreamID: function(uuid, cb) {
             return cb(null, null);
           }
         }
       });
       mockery.registerMock('../../core/activitystreams', {});
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {
@@ -47,6 +48,7 @@ describe('The activitystream middleware', function() {
         }
       });
       mockery.registerMock('../../core/activitystreams', {});
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {
@@ -77,6 +79,7 @@ describe('The activitystream middleware', function() {
           return callback(new Error());
         }
       });
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {
@@ -108,6 +111,7 @@ describe('The activitystream middleware', function() {
           return callback();
         }
       });
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {
@@ -144,6 +148,7 @@ describe('The activitystream middleware', function() {
           return callback(null, streams);
         }
       });
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {
@@ -178,6 +183,7 @@ describe('The activitystream middleware', function() {
           return callback(null, streams);
         }
       });
+      mockery.registerMock('../../../test/fixtures/webserver/middleware/collaboration', {});
 
       var middleware = this.helpers.requireBackend('webserver/middleware/activitystream').isValidStream;
       var req = {

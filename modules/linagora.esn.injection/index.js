@@ -11,6 +11,7 @@ var injectionModule = new AwesomeModule('linagora.esn.injection', {
   states: {
     lib: function(dependencies, callback) {
       var lib = require('./lib')(dependencies);
+
       return callback(null, lib);
     }
   }

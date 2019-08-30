@@ -97,6 +97,7 @@ function getWritable(req, res) {
     if (err) {
       return res.status(500).json({error: {code: 500, message: 'Server Error', details: err.details}});
     }
+
     async.map(collaborations, (collaboration, callback) => {
       transform(collaboration, req.user, transformed => callback(null, transformed));
     }, (err, results) => res.status(200).json(results));

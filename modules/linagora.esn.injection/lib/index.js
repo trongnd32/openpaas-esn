@@ -2,7 +2,6 @@
 
 function injectLib(dependencies) {
   var domainModule = dependencies('domain');
-  var communityModule = dependencies('community');
 
   var lib = {};
 
@@ -18,16 +17,6 @@ function injectLib(dependencies) {
         }
         domain.injections = domain.injections.concat(injections);
         domain.save(callback);
-      });
-    } else if (tuple.objectType === 'community') {
-      communityModule.load(tuple.id, function(err, community) {
-        if (err) {
-          return callback(err);
-        }
-        injections.forEach(function(injection) {
-          community.injections.push(injection);
-        });
-        community.save(community, callback);
       });
     } else {
       return callback(new Error('Unsupported injection target type.'));
@@ -49,17 +38,6 @@ function injectLib(dependencies) {
         });
         domain.injections = otherTargetInjections;
         domain.save(callback);
-      });
-    } else if (target.objectType === 'community') {
-      communityModule.load(target.id, function(err, community) {
-        if (err) {
-          return callback(err);
-        }
-        var otherTargetInjections = community.injections.filter(function(injection) {
-          return injection.source.id + '' !== application.id;
-        });
-        community.injections = otherTargetInjections;
-        community.save(community, callback);
       });
     } else {
       return callback(new Error('Unsupported injection target type.'));

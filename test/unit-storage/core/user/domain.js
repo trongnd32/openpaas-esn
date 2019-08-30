@@ -31,8 +31,8 @@ describe('The user domain module', function() {
           }
           self.User = self.helpers.requireBackend('core/db/mongo/models/user');
           self.Domain = self.helpers.requireBackend('core/db/mongo/models/domain');
-          self.helpers.requireBackend('core/db/mongo/models/community');
-          self.helpers.requireBackend('core/db/mongo/models/community-archive');
+          // self.helpers.requireBackend('core/db/mongo/models/community');
+          // self.helpers.requireBackend('core/db/mongo/models/community-archive');
           done(err);
         });
       });
@@ -449,26 +449,26 @@ describe('The user domain module', function() {
   });
 
   describe('Community tests', function() {
-    var Community;
-    var domain;
-    var domain2;
-    var community;
+    let Collaboration;
+    let domain;
+    let domain2;
+    let collaboration;
 
-    var userDomain;
+    let userDomain;
 
-    var user1;
-    var user2;
-    var user3;
-    var user4;
+    let user1;
+    let user2;
+    let user3;
+    let user4;
 
-    var user12;
-    var user22;
-    var user32;
-    var user42;
+    let user12;
+    let user22;
+    let user32;
+    let user42;
 
     before(function(done) {
+      const self = this;
 
-      var self = this;
       this.mongoose = require('mongoose');
       this.connectMongoose(this.mongoose, function(err) {
         if (err) {
@@ -478,7 +478,7 @@ describe('The user domain module', function() {
         self.helpers.elasticsearch.saveTestConfiguration(function(err) {
           if (err) { return done(err); }
 
-          Community = self.helpers.requireBackend('core/db/mongo/models/community');
+          Collaboration = require('../../../fixtures/db/mongo/models/collaboration');
 
           self.helpers.api.applyDomainDeployment('linagora_test_domain', function(err, models) {
             if (err) {
@@ -502,24 +502,25 @@ describe('The user domain module', function() {
               user32 = models2.users[2];
               user42 = models2.users[3];
 
-              self.helpers.api.createCommunity('Community', user1, domain, function(err, communitySaved) {
+              self.helpers.api.createCollaboration('Collaboration', user1, domain, function(err, collaborationSaved) {
                 if (err) {
                   return done(err);
                 }
 
-                Community.update({_id: communitySaved._id}, {$push: {domain_ids: domain2._id}}, function(err) {
+                Collaboration.update({ _id: collaborationSaved._id }, { $push: { domain_ids: domain2._id } }, function(err) {
                   if (err) {
                     return done(err);
                   }
 
-                  self.helpers.api.addUsersInCommunity(communitySaved, [user2, user3, user22], function(err, communityUpdated) {
+                  self.helpers.api.addUsersInCollaboration(collaborationSaved, [user2, user3, user22], function(err, collaborationUpdated) {
                     if (err) {
                       return done(err);
                     }
-                    community = communityUpdated;
-                    var ids = models.users.map(function(user) {
+                    collaboration = collaborationUpdated;
+                    const ids = models.users.map(function(user) {
                       return user._id;
                     });
+
                     models2.users.forEach(function(user) {
                       ids.push(user._id);
                     });
@@ -546,7 +547,8 @@ describe('The user domain module', function() {
       this.helpers.requireBackend('core/db/mongo/models/user');
       this.helpers.requireBackend('core/db/mongo/models/domain');
       userDomain = this.helpers.requireBackend('core/user/domain');
-      Community = this.helpers.requireBackend('core/db/mongo/models/community');
+      // Community = this.helpers.requireBackend('core/db/mongo/models/community');
+      Collaboration = require('../../../fixtures/db/mongo/models/collaboration');
 
       this.mongoose = require('mongoose');
       this.connectMongoose(this.mongoose, done);
@@ -558,7 +560,7 @@ describe('The user domain module', function() {
 
     describe('list users', function() {
       it('should return users in the two domains and not in the community', function(done) {
-        userDomain.getUsersList([domain, domain2], {not_in_collaboration: community}, function(err, users) {
+        userDomain.getUsersList([domain, domain2], { not_in_collaboration: collaboration }, function(err, users) {
           if (err) {
             return done(err);
           }
@@ -575,12 +577,12 @@ describe('The user domain module', function() {
       });
 
       it('should return users in the two domains, not in the community and no pending membership', function(done) {
-        Community.update({_id: community._id}, {$push: {membershipRequests: {user: user12._id}}}, function(err) {
+        Collaboration.update({ _id: collaboration._id }, { $push: { membershipRequests: { user: user12._id } } }, function(err) {
           if (err) {
             return done(err);
           }
-          community.membershipRequests.push({user: user12._id});
-          userDomain.getUsersList([domain, domain2], {not_in_collaboration: community}, function(err, users) {
+          collaboration.membershipRequests.push({ user: user12._id });
+          userDomain.getUsersList([domain, domain2], { not_in_collaboration: collaboration }, function(err, users) {
             if (err) {
               return done(err);
             }
@@ -599,7 +601,7 @@ describe('The user domain module', function() {
 
     describe('search users', function() {
       it('should return users in the two domains, not in the community and matching with search terms', function(done) {
-        userDomain.getUsersSearch([domain, domain2], {search: 'linagora', not_in_collaboration: community}, function(err, users) {
+        userDomain.getUsersSearch([domain, domain2], { search: 'linagora', not_in_collaboration: collaboration }, function(err, users) {
           if (err) {
             return done(err);
           }
@@ -615,12 +617,12 @@ describe('The user domain module', function() {
 
       it('should return users in the two domains, not in the community, no pending membership and ' +
       'matching with search terms', function(done) {
-        Community.update({_id: community._id}, {$push: {membershipRequests: {user: user4._id}}}, function(err) {
+        Collaboration.update({ _id: collaboration._id }, { $push: { membershipRequests: { user: user4._id } } }, function(err) {
           if (err) {
             return done(err);
           }
-          community.membershipRequests.push({user: user4._id});
-          userDomain.getUsersSearch([domain, domain2], {search: 'linagora', not_in_collaboration: community}, function(err, users) {
+          collaboration.membershipRequests.push({ user: user4._id });
+          userDomain.getUsersSearch([domain, domain2], { search: 'linagora', not_in_collaboration: collaboration }, function(err, users) {
             if (err) {
               return done(err);
             }

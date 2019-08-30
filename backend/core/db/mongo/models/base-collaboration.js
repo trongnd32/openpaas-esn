@@ -51,6 +51,7 @@ function buildBaseCollaborationSchema(json, collaborationType) {
       this.findOne({ 'activity_stream.uuid': id }).exec(cb);
     }
   };
+
   return CollaborationSchema;
 }
 

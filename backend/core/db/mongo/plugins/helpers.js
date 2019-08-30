@@ -2,10 +2,8 @@
 
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
-var Community = mongoose.model('Community');
 var esPlugin = require('./elasticsearch');
 var userListener = require('../../../user/listener');
-var communityListener = require('../../../community/listener');
 var elasticSearch = require('../../../elasticsearch/listeners');
 var logger = require('../../../logger');
 
@@ -14,14 +12,8 @@ function applyUserPlugins() {
 }
 module.exports.applyUserPlugins = applyUserPlugins;
 
-function applyCommunityPlugins() {
-  Community.schema.plugin(esPlugin(communityListener.getOptions()));
-}
-module.exports.applyCommunityPlugins = applyCommunityPlugins;
-
 function applyPlugins() {
   applyUserPlugins();
-  applyCommunityPlugins();
 }
 module.exports.applyPlugins = applyPlugins;
 

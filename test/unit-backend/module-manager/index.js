@@ -40,6 +40,7 @@ describe('The module manager', function() {
         this.loaders = {
           code: function(mock) {
             self.registeredMocks.push(mock);
+
             return {mock: mock};
           }
         };
@@ -59,7 +60,6 @@ describe('The module manager', function() {
         'linagora.esn.core.availability',
         'linagora.esn.core.avatar',
         'linagora.esn.core.collaboration',
-        'linagora.esn.core.community',
         'linagora.esn.core.config',
         'linagora.esn.core.configuration',
         'linagora.esn.core.configured',
@@ -103,7 +103,6 @@ describe('The module manager', function() {
         'linagora.esn.core.webserver.middleware.authentication',
         'linagora.esn.core.webserver.middleware.authorization',
         'linagora.esn.core.webserver.middleware.collaboration',
-        'linagora.esn.core.webserver.middleware.community',
         'linagora.esn.core.webserver.middleware.configuration',
         'linagora.esn.core.webserver.middleware.cookie-lifetime',
         'linagora.esn.core.webserver.middleware.domain',
@@ -155,6 +154,7 @@ describe('The module manager', function() {
         this.loaders = {
           code: function(mock) {
             self.registeredMocks.push(mock);
+
             return mock;
           }
         };

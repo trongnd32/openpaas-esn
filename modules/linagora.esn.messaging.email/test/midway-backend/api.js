@@ -23,6 +23,12 @@ describe('linagora.esn.messaging.email module', function() {
       if (err) {
         return done(err);
       }
+      require('../../../../test/fixtures/db/mongo/models/collaboration');
+
+      const collaborationModule = self.helpers.requireBackend('core/collaboration');
+      const objectType = 'collaboration';
+
+      collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
 
       self.helpers.api.applyDomainDeployment(
         'linagora_EMAILReply',
@@ -34,6 +40,7 @@ describe('linagora.esn.messaging.email module', function() {
             return done(err);
           }
           self.models = models;
+
           return done();
         }
       );

@@ -27,12 +27,14 @@ function getModel(objectType) {
   if (!modelName) {
     throw new Error('Unkown object type: ', objectType);
   }
+
   return mongoose.model(modelName);
 }
 
 function getInstance(objectType, message) {
   var Model;
   Model = getModel(objectType);
+
   return new Model(message);
 }
 
@@ -87,7 +89,8 @@ function get(uuid, callback) {
     }
     instance = new Model();
     instance.init(doc);
-    return callback(null, instance);
+
+return callback(null, instance);
   });
 }
 
@@ -107,7 +110,8 @@ function getWithAuthors(uuid, callback) {
       if (err) { return callback(err); }
 
       applyAuthors(authorsMap, authors);
-      return callback(null, doc);
+
+return callback(null, doc);
     });
   });
 }
@@ -135,7 +139,8 @@ function copy(id, sharerId, resource, target, callback) {
           })
           .pop();
         }
-        return callback(null, {root: message, target: targetMessage});
+
+return callback(null, {root: message, target: targetMessage});
       });
     });
   }
@@ -188,7 +193,8 @@ function copy(id, sharerId, resource, target, callback) {
       if (err) {
         return callback(err);
       }
-      return callback(err, result[1][0]);
+
+return callback(err, result[1][0]);
     });
   });
 }
@@ -241,7 +247,8 @@ function findByIds(ids, callback) {
       if (err) { return callback(err); }
 
       applyAuthors(authorsMap, authors);
-      return callback(null, messages);
+
+return callback(null, messages);
     });
   });
 }
@@ -279,13 +286,15 @@ function setAttachmentsReferences(message, callback) {
       if (err) {
         failures.push(attachment);
       }
-      return done();
+
+return done();
     });
   }, function() {
     if (failures.length > 1) {
       return callback(new Error('Fail to set references for attachments', failures));
     }
-    return callback();
+
+return callback();
   });
 }
 
@@ -326,7 +335,8 @@ function filterReadableResponsesFromStatus(message, user, callback) {
     });
   }, function() {
     message.responses = responses;
-    return callback(null, message);
+
+return callback(null, message);
   });
 }
 

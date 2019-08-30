@@ -8,11 +8,9 @@ describe('The messages middleware', function() {
   describe('The canReplyTo fn', function() {
 
     beforeEach(function() {
-      mockery.registerMock('../community', {});
       mockery.registerMock('../../core/collaboration', {});
       mockery.registerMock('../../core/message/permission', {});
       mockery.registerMock('../../core/message', {});
-      mockery.registerMock('../../core/community', {});
     });
 
     it('should call next if req.body.replyTo is undefined', function(done) {
@@ -233,11 +231,9 @@ describe('The messages middleware', function() {
   describe('The canShareTo function', function() {
 
     beforeEach(function() {
-      mockery.registerMock('../community', {});
       mockery.registerMock('../../core/collaboration', {});
       mockery.registerMock('../../core/message/permission', {});
       mockery.registerMock('../../core/message', {});
-      mockery.registerMock('../../core/community', {});
     });
 
     it('should send back 400 when target is undefined', function(done) {
@@ -345,11 +341,9 @@ describe('The messages middleware', function() {
   describe('The canShareFrom function', function() {
 
     beforeEach(function() {
-      mockery.registerMock('../community', {});
       mockery.registerMock('../../core/collaboration', {});
       mockery.registerMock('../../core/message/permission', {});
       mockery.registerMock('../../core/message', {});
-      mockery.registerMock('../../core/community', {});
     });
 
     it('should send back 400 when resource is undefined', function(done) {

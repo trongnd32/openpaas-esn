@@ -11,6 +11,11 @@ describe('The collaborations members API', function() {
     this.mongoose = require('mongoose');
     this.testEnv.initCore(function() {
       webserver = self.helpers.requireBackend('webserver').webserver;
+      require('../../../fixtures/db/mongo/models/collaboration');
+      const collaborationModule = self.helpers.requireBackend('core/collaboration');
+      const objectType = 'collaboration';
+
+      collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
     });
   });
 
@@ -41,7 +46,7 @@ describe('The collaborations members API', function() {
           helpers.api.loginAsUser(webserver.application, manager.emails[0], 'secret', (err, loggedInAsUser) => {
             if (err) return done(err);
 
-            const req = loggedInAsUser(request(webserver.application).post(`/api/collaborations/community/${community._id}/invitablepeople`));
+            const req = loggedInAsUser(request(webserver.application).post(`/api/collaborations/collaboration/${community._id}/invitablepeople`));
 
             req.expect(200);
             req.end((err, res) => {

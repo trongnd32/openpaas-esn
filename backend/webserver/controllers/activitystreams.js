@@ -14,6 +14,7 @@ var isLimitvalid = function(limit) {
 var isValidObjectId = function(id) {
   try {
     new mongoose.Types.ObjectId(id);
+
     return true;
   } catch (err) {
     return false;
@@ -43,6 +44,7 @@ function getMine(req, res) {
     if (err) {
       return res.status(500).json({error: {code: 500, message: 'Server error', details: err.message}});
     }
+
     return res.status(200).json(streams || []);
   }
 
@@ -132,6 +134,7 @@ function getUnreadCount(req, res) {
         details: 'Fail to get the number of unread timeline entries for this activity stream ( ' +
           req.activity_stream._id + '): ' + err.message}});
     }
+
     return res.status(200).json({
       _id: req.activity_stream._id,
       unread_count: count

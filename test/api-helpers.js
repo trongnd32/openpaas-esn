@@ -41,6 +41,7 @@ module.exports = function(mixin, testEnv) {
   api.createUser = function(user) {
     var User = require('mongoose').model('User');
     var userHelper = require('../backend/core/user/helpers');
+
     return q.ninvoke(userHelper, 'saveAndIndexUser', new User(user));
   };
 
@@ -65,12 +66,14 @@ module.exports = function(mixin, testEnv) {
     }
     var deployment = fixtures[name]();
     require(testEnv.basePath + '/backend/core').db.mongo;
+    require('./fixtures/db/mongo/models/collaboration');
     var self = this;
     require('mongoose').model('User');
-    var Community = require('mongoose').model('Community');
+    var Collaboration = require('mongoose').model('Collaboration');
     var Domain = require('mongoose').model('Domain');
     var helpers = require('../backend/core/db/mongo/plugins/helpers');
-    helpers.applyCommunityPlugins();
+    // helpers.applyCommunityPlugins();
+    // helpers.applyCollaborationPlugins();
     helpers.patchFindOneAndUpdate();
 
     deployment.models = {};
@@ -172,13 +175,13 @@ module.exports = function(mixin, testEnv) {
       });
     }
 
-    function createCommunities() {
+    function createCollaborations() {
       deployment.communities = deployment.communities || [];
       deployment.models.communities = deployment.models.communities || [];
 
       return deployment.communities.reduce(function(sofar, c) {
         return sofar.then(function() {
-          return saveCollaboration(Community, deployment.models, c);
+          return saveCollaboration(Collaboration, deployment.models, c);
         }).then(function(collab) {
           deployment.models.communities.push(collab);
         });
@@ -192,6 +195,7 @@ module.exports = function(mixin, testEnv) {
       return deployment.projects.reduce(function(sofar, p) {
         return sofar.then(function() {
           var Project = require('mongoose').model('Project');
+
           return saveCollaboration(Project, deployment.models, p);
         }).then(function(collab) {
           deployment.models.projects.push(collab);
@@ -208,9 +212,11 @@ module.exports = function(mixin, testEnv) {
           if (err) {
             return defer.reject(err);
           }
+
           return defer.resolve(true);
         });
       }
+
       return defer.promise;
     }
 
@@ -218,24 +224,29 @@ module.exports = function(mixin, testEnv) {
       .then(createDomain)
       .then(createUsers)
       .then(updateDomainAdministrator)
-      .then(createCommunities)
+      .then(createCollaborations)
       .then(createProjects)
       .then(function() { return q(deployment.models); })
       .nodeify(callback);
   };
 
-  api.getCommunity = function(id, done) {
-    var Community = require('mongoose').model('Community');
-    Community.findOne({_id: id}, done);
+  // api.getCommunity = function(id, done) {
+  //   var Community = require('mongoose').model('Community');
+  //   Community.findOne({_id: id}, done);
+  // };
+
+  api.getCollaboration = function(id, done) {
+    var Collaboration = require('mongoose').model('Collaboration');
+    Collaboration.findOne({ _id: id }, done);
   };
 
-  api.createCommunity = function(title, creator, domain, opts, done) {
-    require(testEnv.basePath + '/backend/core/db/mongo/models/community');
+  api.createCollaboration = function(title, creator, domain, opts, done) {
+    require(testEnv.basePath + '/test/fixtures/db/mongo/models/collaboration');
     if (opts && !done) {
       done = opts;
       opts = null;
     }
-    var Community = require('mongoose').model('Community');
+    var Collaboration = require('mongoose').model('Collaboration');
     var creatorId = creator._id || creator;
     var json = {
       title: title,
@@ -243,7 +254,7 @@ module.exports = function(mixin, testEnv) {
       creator: creatorId,
       domain_ids: [domain._id || domain],
       members: [
-      {member: {id: creatorId, objectType: 'user'}}
+      { member: { id: creatorId, objectType: 'user' } }
       ]
     };
     if (opts) {
@@ -253,16 +264,18 @@ module.exports = function(mixin, testEnv) {
         extend(true, json, opts);
       }
     }
-    var community = new Community(json);
-    return community.save(done);
+    var collaboration = new Collaboration(json);
+
+    return collaboration.save(done);
   };
 
-  api.addUsersInCommunity = function(community, users, done) {
-    var Community = require('mongoose').model('Community');
-    var async = require('async');
+  api.addUsersInCollaboration = function(collaboration, users, done) {
+    const Collaboration = require('mongoose').model('Collaboration');
+    const async = require('async');
+
     async.each(users, function(user, callback) {
-      Community.update({
-        _id: community._id || community
+      Collaboration.update({
+        _id: collaboration._id || collaboration
       }, {
         $push: {
           members: {
@@ -276,19 +289,21 @@ module.exports = function(mixin, testEnv) {
       }, callback);
     }, function(err) {
       if (err) { return done(err); }
-      Community.findOne({_id: community._id || community}, function(err, result) {
+      Collaboration.findOne({_id: collaboration._id || collaboration}, function(err, result) {
         if (err) { return done(err); }
+
         return done(null, result);
       });
     });
   };
 
-  api.addMembersInCommunity = function(community, tuples, done) {
-    var Community = require('mongoose').model('Community');
-    var async = require('async');
+  api.addMembersInCollaboration = function(collaboration, tuples, done) {
+    const Collaboration = require('mongoose').model('Collaboration');
+    const async = require('async');
+
     async.each(tuples, function(tuple, callback) {
-      Community.update({
-        _id: community._id || community
+      Collaboration.update({
+        _id: collaboration._id || collaboration
       }, {
         $push: {
           members: {
@@ -302,8 +317,9 @@ module.exports = function(mixin, testEnv) {
       }, callback);
     }, function(err) {
       if (err) { return done(err); }
-      Community.findOne({_id: community._id || community}, function(err, result) {
+      Collaboration.findOne({ _id: collaboration._id || collaboration }, function(err, result) {
         if (err) { return done(err); }
+
         return done(null, result);
       });
     });
@@ -334,9 +350,11 @@ module.exports = function(mixin, testEnv) {
       function requestWithSessionCookie(cookies) {
         return function(r) {
           r.cookies = cookies;
+
           return r;
         };
       }
+
       return done(null, requestWithSessionCookie(cookies));
     });
   };
@@ -380,6 +398,7 @@ module.exports = function(mixin, testEnv) {
       });
       e.save(function(err) {
         if (err) { return callback(err); }
+
         return callback(null, e);
       });
     }
@@ -401,6 +420,7 @@ module.exports = function(mixin, testEnv) {
         return callback(err);
       }
       models.timelineEntries = timelineEntries;
+
       return callback(null, models);
     });
   };
@@ -443,6 +463,7 @@ module.exports = function(mixin, testEnv) {
       var e = new TimelineEntry(timelineEntry);
       e.save(function(err) {
         if (err) { return callback(err); }
+
         return callback(null, e);
       });
     }
@@ -466,6 +487,7 @@ module.exports = function(mixin, testEnv) {
         return callback(err);
       }
       models.timelineEntries = timelineEntries;
+
       return callback(null, models);
     });
   };
@@ -499,11 +521,13 @@ module.exports = function(mixin, testEnv) {
         };
       })
     };
+
     return module.getInstance(type, message).save(callback);
   };
 
   api.loadMessage = function(id, callback) {
     var module = require(testEnv.basePath + '/backend/core/message');
+
     return module.get(id, callback);
   };
 

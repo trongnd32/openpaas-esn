@@ -1,6 +1,6 @@
 'use strict';
 
-var expect = require('chai').expect,
+const expect = require('chai').expect,
   request = require('supertest'),
   uuidV4 = require('uuid/v4'),
   mockery = require('mockery');
@@ -150,6 +150,10 @@ describe('The activitystreams API', function() {
         });
 
         it('should send back 200 when activitystream exists with timeline entries', function(done) {
+          const collaborationModule = require('../../../backend/core/collaboration');
+          const objectType = 'collaboration';
+
+          collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
           this.helpers.api.loginAsUser(app, email, password, function(err, loggedInAsUser) {
             expect(err).to.not.exist;
             loggedInAsUser(request(app).get('/api/activitystreams/' + activitystreamId + '?limit=10'))
@@ -201,7 +205,7 @@ describe('The activitystreams API', function() {
                 expect(err).to.not.exist;
 
                 var expectedObject = {
-                  objectType: 'community',
+                  objectType: 'collaboration',
                   object: self.helpers.toComparableObject(community)
                 };
 
@@ -230,7 +234,7 @@ describe('The activitystreams API', function() {
           user = models.users[0];
           user2 = models.users[1];
 
-          self.helpers.api.createCommunity('Node', user, domain, function(err, saved) {
+          self.helpers.api.createCollaboration('Node', user, domain, function(err, saved) {
             expect(err).to.not.exist;
             activitystreamId = saved.activity_stream.uuid;
             community = saved;
@@ -253,6 +257,10 @@ describe('The activitystreams API', function() {
         });
 
         it('should send back 200 with 0 unread timeline entries when get the number for the first time', function(done) {
+          const collaborationModule = require('../../../backend/core/collaboration');
+          const objectType = 'collaboration';
+
+          collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
           this.helpers.api.loginAsUser(app, user.emails[0], password, function(err, loggedInAsUser) {
             var req = loggedInAsUser(request(app).get('/api/activitystreams/' + activitystreamId + '/unreadcount'));
             req.expect(200);
@@ -273,6 +281,10 @@ describe('The activitystreams API', function() {
 
       it('should send back 200 with 3 unread timeline entries', function(done) {
         var self = this;
+        const collaborationModule = require('../../../backend/core/collaboration');
+        const objectType = 'collaboration';
+
+        collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
 
         // Login
         this.helpers.api.loginAsUser(app, user.emails[0], password, function(err, loggedInAsUser) {
@@ -312,9 +324,13 @@ describe('The activitystreams API', function() {
       });
 
       describe('when there is an update timelineentry', function() {
+
         it('should send back 200 with 3 unread timeline entries', function(done) {
           var self = this;
+          const collaborationModule = require('../../../backend/core/collaboration');
+          const objectType = 'collaboration';
 
+          collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
           // Login
           this.helpers.api.loginAsUser(app, user.emails[0], password, function(err, loggedInAsUser) {
             // Add one Timeline Entry
@@ -358,8 +374,11 @@ describe('The activitystreams API', function() {
 
       it('should send back 200 with 0 unread TimelineEntry for new user in community', function(done) {
         var self = this;
+        const collaborationModule = require('../../../backend/core/collaboration');
+        const objectType = 'collaboration';
 
-        var communityCore = this.helpers.requireBackend('core/community');
+        collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
+        var collaborationCore = this.helpers.requireBackend('core/collaboration');
 
         // Login
         this.helpers.api.loginAsUser(app, user.emails[0], password, function() {
@@ -368,7 +387,7 @@ describe('The activitystreams API', function() {
             expect(err).to.not.exist;
 
             // Add the second user to the community
-            communityCore.member.join(community, user2, user2, 'user', function(err) {
+            collaborationCore.member.join('collaboration', community, user2, user2, 'user', function(err) {
               expect(err).to.not.exist;
 
               self.helpers.api.loginAsUser(app, user2.emails[0], password, function(err, loggedInAsUser2) {
@@ -396,7 +415,10 @@ describe('The activitystreams API', function() {
       it('should send back 200 with 3 unread timeline entries ' +
         'when there are 4 timeline entries but with 1 own by the user', function(done) {
         var self = this;
+        const collaborationModule = require('../../../backend/core/collaboration');
+        const objectType = 'collaboration';
 
+        collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
         var TimelineEntry = this.mongoose.model('TimelineEntry');
 
         // Login
@@ -475,7 +497,7 @@ describe('The activitystreams API', function() {
           domain = models.domain;
           user = models.users[0];
 
-          self.helpers.api.createCommunity('Node', user, domain, function(err, saved) {
+          self.helpers.api.createCollaboration('Node', user, domain, function(err, saved) {
             expect(err).to.not.exist;
             activitystreamId = saved.activity_stream.uuid;
             done();

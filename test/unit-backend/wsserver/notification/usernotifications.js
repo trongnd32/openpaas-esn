@@ -11,8 +11,6 @@ describe('The websockets usernotification module', function() {
   });
 
   beforeEach(function() {
-    this.helpers.requireBackend('core/db/mongo/models/community');
-    this.helpers.requireBackend('core/db/mongo/models/community-archive');
     this.helpers.requireBackend('core/db/mongo/models/domain');
     this.helpers.requireBackend('core/db/mongo/models/notification');
     this.helpers.requireBackend('core/db/mongo/models/usernotification');
@@ -31,7 +29,9 @@ describe('The websockets usernotification module', function() {
 
     var loggerMocked = {
       warn: function(message) {
-        messageWarn = message; return;
+        messageWarn = message;
+
+        return;
       }
     };
 
@@ -60,6 +60,7 @@ describe('The websockets usernotification module', function() {
       var socketHelper = {
         getUserSocketsFromNamespace: function() {
           call++;
+
           return [];
         }
       };
@@ -95,6 +96,7 @@ describe('The websockets usernotification module', function() {
                 emittedEvents2.push(payload);
               }
             };
+
             return [socket1, socket2];
           } else {
             var socket3 = {
@@ -103,6 +105,7 @@ describe('The websockets usernotification module', function() {
                 emittedEvents3.push(payload);
               }
             };
+
             return [socket3];
           }
         }

@@ -1,20 +1,27 @@
 'use strict';
 
-var expect = require('chai').expect;
-var request = require('supertest');
-var async = require('async');
+const expect = require('chai').expect;
+const request = require('supertest');
+const async = require('async');
 
 describe('The collaborations API', function() {
-  var webserver;
+  let webserver;
 
   beforeEach(function(done) {
-    var self = this;
+    const self = this;
 
     this.mongoose = require('mongoose');
     this.testEnv.initCore(function() {
       webserver = self.helpers.requireBackend('webserver').webserver;
       done();
     });
+    require('../../../fixtures/db/mongo/models/collaboration');
+    const collaborationModule = require('../../../../backend/core/collaboration');
+    const collaborationModuleTest = require('../../../fixtures/backend/collaboration');
+    const objectType = 'collaboration';
+
+    collaborationModule.registerCollaborationLib(objectType, collaborationModuleTest);
+    collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
   });
 
   afterEach(function(done) {
@@ -24,7 +31,8 @@ describe('The collaborations API', function() {
   describe('GET /api/collaborations/membersearch', function() {
 
     beforeEach(function(done) {
-      var self = this;
+      const self = this;
+
       this.helpers.api.applyDomainDeployment('collaborationMembers', function(err, models) {
         if (err) { return done(err); }
         self.domain = models.domain;
@@ -37,7 +45,8 @@ describe('The collaborations API', function() {
     });
 
     afterEach(function(done) {
-      var self = this;
+      const self = this;
+
       self.helpers.api.cleanDomainDeployment(self.models, done);
     });
 
@@ -46,22 +55,26 @@ describe('The collaborations API', function() {
     });
 
     it('should 400 when req.query.objectType is not set', function(done) {
-      var self = this;
+      const self = this;
+
       self.helpers.api.loginAsUser(webserver.application, this.user2.emails[0], 'secret', function(err, loggedInAsUser) {
         if (err) { return done(err); }
 
-        var req = loggedInAsUser(request(webserver.application).get('/api/collaborations/membersearch?id=' + self.user3._id));
+        const req = loggedInAsUser(request(webserver.application).get('/api/collaborations/membersearch?id=' + self.user3._id));
+
         req.expect(400);
         done();
       });
     });
 
     it('should 400 when req.query.id is not set', function(done) {
-      var self = this;
+      const self = this;
+
       self.helpers.api.loginAsUser(webserver.application, this.user2.emails[0], 'secret', function(err, loggedInAsUser) {
         if (err) { return done(err); }
 
-        var req = loggedInAsUser(request(webserver.application).get('/api/collaborations/membersearch?objectType=community'));
+        const req = loggedInAsUser(request(webserver.application).get('/api/collaborations/membersearch?objectType=collaboration'));
+
         req.expect(400);
         done();
       });
@@ -74,7 +87,7 @@ describe('The collaborations API', function() {
         id: 'alice@email.com'
       };
 
-      self.helpers.api.addMembersInCommunity(self.models.communities[1], [tuple], err => {
+      self.helpers.api.addMembersInCollaboration(self.models.communities[1], [tuple], err => {
         if (err) {
           return done(err);
         }
@@ -127,8 +140,8 @@ describe('The collaborations API', function() {
       }
 
       async.parallel([
-        callback => self.helpers.api.addMembersInCommunity(self.models.communities[1], tuples, callback),
-        callback => self.helpers.api.addMembersInCommunity(self.models.communities[2], tuples, callback)
+        callback => self.helpers.api.addMembersInCollaboration(self.models.communities[1], tuples, callback),
+        callback => self.helpers.api.addMembersInCollaboration(self.models.communities[2], tuples, callback)
       ], err => {
         if (err) {
           return done(err);
@@ -142,16 +155,18 @@ describe('The collaborations API', function() {
   describe('GET /api/collaborations/writable', function() {
 
     beforeEach(function(done) {
-      var self = this;
+      const self = this;
+
       this.helpers.api.applyDomainDeployment('openAndPrivateCommunities', function(err, models) {
         if (err) { return done(err); }
         self.models = models;
-        var jobs = models.users.map(function(user) {
+        const jobs = models.users.map(function(user) {
           return function(done) {
-            user.domains.push({domain_id: self.models.domain._id});
+            user.domains.push({ domain_id: self.models.domain._id });
             user.save(done);
           };
         });
+
         async.parallel(jobs, done);
       });
     });
@@ -161,13 +176,15 @@ describe('The collaborations API', function() {
     });
 
     it('should return the list of collaborations the user can write into', function(done) {
-      var self = this;
-      var correctIds = [self.models.communities[0].id, self.models.communities[1].id, self.models.communities[3].id];
+      const self = this;
+      const correctIds = [self.models.communities[0].id, self.models.communities[1].id, self.models.communities[3].id];
+
       self.helpers.api.loginAsUser(webserver.application, self.models.users[2].emails[0], 'secret', function(err, loggedInAsUser) {
         if (err) {
           return done(err);
         }
-        var req = loggedInAsUser(request(webserver.application).get('/api/collaborations/writable'));
+        const req = loggedInAsUser(request(webserver.application).get('/api/collaborations/writable'));
+
         req.expect(200);
         req.end(function(err, res) {
           expect(err).to.not.exist;

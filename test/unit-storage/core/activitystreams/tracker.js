@@ -1,17 +1,17 @@
 'use strict';
 
-var chai = require('chai');
-var expect = chai.expect;
-var async = require('async');
+const chai = require('chai');
+const expect = chai.expect;
+const async = require('async');
 
 describe('the TimelineEntriesTracker module', function() {
-  var ReadTimelineEntriesTracker;
-  var tracker;
+  let ReadTimelineEntriesTracker;
+  let tracker;
 
-  var ObjectId;
-  var userId;
-  var activityStreamUuid;
-  var timelineEntryId;
+  let ObjectId;
+  let userId;
+  let activityStreamUuid;
+  let timelineEntryId;
 
   beforeEach(function(done) {
     ObjectId = require('bson').ObjectId;
@@ -23,14 +23,18 @@ describe('the TimelineEntriesTracker module', function() {
     this.helpers.requireBackend('core/db/mongo/models/timelineentry');
     this.helpers.requireBackend('core/db/mongo/models/domain');
     this.helpers.requireBackend('core/db/mongo/models/user');
-    this.helpers.requireBackend('core/db/mongo/models/community');
-    this.helpers.requireBackend('core/db/mongo/models/community-archive');
+    require('../../../fixtures/db/mongo/models/collaboration');
     this.helpers.requireBackend('core/db/mongo/models/notification');
     this.helpers.requireBackend('core/db/mongo/models/usernotification');
     this.helpers.requireBackend('core/db/mongo/models/authtoken');
     this.helpers.requireBackend('core/db/mongo/models/resource-link');
     this.helpers.requireBackend('core/db/mongo/models/passwordreset');
-    this.helpers.requireBackend('core/community');
+
+    const collaborationModule = this.helpers.requireBackend('core/collaboration');
+    const objectType = 'collaboration';
+
+    collaborationModule.registerCollaborationModel(objectType, 'Collaboration');
+
     ReadTimelineEntriesTracker = this.helpers.requireBackend('core/db/mongo/models/read-timelineentriestracker');
     tracker = this.helpers.requireBackend('core/activitystreams/tracker').getTracker('read');
     this.testEnv.writeDBConfigFile();
@@ -48,7 +52,8 @@ describe('the TimelineEntriesTracker module', function() {
 
       ReadTimelineEntriesTracker.findOne(userId, function(err, doc) {
         expect(err).to.not.exist;
-        var expectedDoc = {_id: userId + '', timelines: {}};
+        const expectedDoc = { _id: userId + '', timelines: {} };
+
         expectedDoc.timelines[activityStreamUuid] = timelineEntryId;
         expect(doc).to.shallowDeepEqual(expectedDoc);
         done();
@@ -57,22 +62,25 @@ describe('the TimelineEntriesTracker module', function() {
   });
 
   it('should update the existing TimelineEntriesTracker with the new TimelineEntry', function(done) {
-    var timelineEntriesTracker = {
+    const timelineEntriesTracker = {
       _id: userId,
       timelines: {}
     };
+
     timelineEntriesTracker.timelines[activityStreamUuid] = timelineEntryId;
 
     this.helpers.mongo.saveDoc('timelineEntriesTrackers', timelineEntriesTracker, function(err) {
       if (err) { done(err); }
 
-      var timelineEntryId_2 = '538d87b37779021a1acf1b13';
+      const timelineEntryId_2 = '538d87b37779021a1acf1b13';
+
       tracker.updateLastTimelineEntry(userId, activityStreamUuid, timelineEntryId_2, function(err) {
         expect(err).to.not.exist;
 
         ReadTimelineEntriesTracker.findOne(userId, function(err, doc) {
           expect(err).to.not.exist;
-          var expectedDoc = {_id: userId + '', timelines: {}};
+          const expectedDoc = { _id: userId + '', timelines: {} };
+
           expectedDoc.timelines[activityStreamUuid] = timelineEntryId_2;
           expect(doc).to.shallowDeepEqual(expectedDoc);
           done();
@@ -82,17 +90,17 @@ describe('the TimelineEntriesTracker module', function() {
   });
 
   it('should return 0 unread TimelineEntry when update to the last TimelineEntry', function(done) {
-    var self = this;
+    const self = this;
 
     this.helpers.api.applyDomainDeployment('linagora_test_cases', function(err, models) {
       if (err) { return done(err); }
 
-      self.helpers.api.createCommunity('Node', models.users[0], models.domain, function(err, community) {
+      self.helpers.api.createCollaboration('Node', models.users[0], models.domain, function(err, collaboration) {
         if (err) {
           return done(err);
         }
 
-        self.helpers.api.applyMultipleTimelineEntries(community.activity_stream.uuid, 3, 'post', function(err, models2) {
+        self.helpers.api.applyMultipleTimelineEntries(collaboration.activity_stream.uuid, 3, 'post', function(err, models2) {
           if (err) {
             return done(err);
           }
@@ -115,17 +123,17 @@ describe('the TimelineEntriesTracker module', function() {
   });
 
   it('should return 4 unread TimelineEntry when add 3 TimelineEntries, update last and add 4 TimelineEntries', function(done) {
-    var self = this;
+    const self = this;
 
     this.helpers.api.applyDomainDeployment('linagora_test_cases', function(err, models) {
       if (err) { return done(err); }
 
-      self.helpers.api.createCommunity('Node', models.users[0], models.domain, function(err, community) {
+      self.helpers.api.createCollaboration('Node', models.users[0], models.domain, function(err, collaboration) {
         if (err) {
           return done(err);
         }
 
-        self.helpers.api.applyMultipleTimelineEntries(community.activity_stream.uuid, 3, 'post', function(err, models2) {
+        self.helpers.api.applyMultipleTimelineEntries(collaboration.activity_stream.uuid, 3, 'post', function(err, models2) {
           if (err) {
             return done(err);
           }
@@ -140,7 +148,7 @@ describe('the TimelineEntriesTracker module', function() {
               expect(count).to.exist;
               expect(count).to.deep.equal(0);
 
-              self.helpers.api.applyMultipleTimelineEntries(community.activity_stream.uuid, 4, 'post', function(err, models3) {
+              self.helpers.api.applyMultipleTimelineEntries(collaboration.activity_stream.uuid, 4, 'post', function(err, models3) {
                 if (err) {
                   return done(err);
                 }
@@ -160,17 +168,17 @@ describe('the TimelineEntriesTracker module', function() {
   });
 
   it('should return 2 unread TimelineEntry when add 5 TimelineEntries, update last read to the first added and change verb to "remove" for 2 of them', function(done) {
-    var self = this;
+    const self = this;
 
     this.helpers.api.applyDomainDeployment('linagora_test_cases', function(err, models) {
       if (err) { return done(err); }
 
-      self.helpers.api.createCommunity('Node', models.users[0], models.domain, function(err, community) {
+      self.helpers.api.createCollaboration('Node', models.users[0], models.domain, function(err, collaboration) {
         if (err) {
           return done(err);
         }
 
-        self.helpers.api.applyMultipleTimelineEntries(community.activity_stream.uuid, 5, 'post', function(err, models2) {
+        self.helpers.api.applyMultipleTimelineEntries(collaboration.activity_stream.uuid, 5, 'post', function(err, models2) {
           if (err) {
             return done(err);
           }
@@ -180,12 +188,13 @@ describe('the TimelineEntriesTracker module', function() {
               return done(err);
             }
 
-            var TimelineEntry = self.helpers.requireBackend('core/db/mongo/models/timelineentry');
-            TimelineEntry.update({_id: models2.timelineEntries[1]._id }, {$set: {verb: 'remove'}}, function(err) {
+            const TimelineEntry = self.helpers.requireBackend('core/db/mongo/models/timelineentry');
+
+            TimelineEntry.update({ _id: models2.timelineEntries[1]._id }, { $set: { verb: 'remove' } }, function(err) {
               if (err) {
                 return done(err);
               }
-              TimelineEntry.update({_id: models2.timelineEntries[2]._id }, {$set: {verb: 'remove'}}, function(err) {
+              TimelineEntry.update({ _id: models2.timelineEntries[2]._id }, { $set: { verb: 'remove' } }, function(err) {
                 if (err) {
                   return done(err);
                 }
@@ -205,10 +214,9 @@ describe('the TimelineEntriesTracker module', function() {
   });
 
   it('should rebuild the threads with their responses', function(done) {
+    const self = this;
 
-    var self = this;
-
-    var createTimeline = function(uuid, size, callback) {
+    const createTimeline = function(uuid, size, callback) {
       self.helpers.api.applyMultipleTimelineEntriesWithReplies(uuid, size, callback);
     };
 
@@ -217,35 +225,35 @@ describe('the TimelineEntriesTracker module', function() {
         return done(err);
       }
 
-      self.helpers.api.createCommunity('Node', models.users[0], models.domain, function(err, community) {
+      self.helpers.api.createCollaboration('Node', models.users[0], models.domain, function(err, collaboration) {
         if (err) {
           return done(err);
         }
 
         async.parallel([
           function(callback) {
-            createTimeline(community.activity_stream.uuid, 1, callback);
+            createTimeline(collaboration.activity_stream.uuid, 1, callback);
           },
           function(callback) {
-            createTimeline(community.activity_stream.uuid, 5, callback);
+            createTimeline(collaboration.activity_stream.uuid, 5, callback);
           },
           function(callback) {
-            createTimeline(community.activity_stream.uuid, 10, callback);
+            createTimeline(collaboration.activity_stream.uuid, 10, callback);
           },
           function(callback) {
-            createTimeline(community.activity_stream.uuid, 15, callback);
+            createTimeline(collaboration.activity_stream.uuid, 15, callback);
           }
         ], function(err, results) {
           if (err) {
             return done(err);
           }
 
-          tracker.updateLastTimelineEntry(models.users[0]._id, community.activity_stream.uuid, results[0].timelineEntries[0], function(err) {
+          tracker.updateLastTimelineEntry(models.users[0]._id, collaboration.activity_stream.uuid, results[0].timelineEntries[0], function(err) {
             if (err) {
               return done(err);
             }
 
-            tracker.buildThreadViewSinceLastTimelineEntry(models.users[0]._id, community.activity_stream.uuid, function(err, threads) {
+            tracker.buildThreadViewSinceLastTimelineEntry(models.users[0]._id, collaboration.activity_stream.uuid, function(err, threads) {
               if (err) {
                 return done(err);
               }

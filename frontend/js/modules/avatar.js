@@ -488,8 +488,7 @@ angular.module('esn.avatar', [
       avatarUrl: '<',
       hideUserStatus: '<',
       noCache: '<',
-      resolveAvatar: '&',
-      objectType: '<'
+      resolveAvatar: '&'
     }
   })
   .controller('EsnAvatarController', function($attrs, $q, $log, userAPI, esnAvatarUrlService) {
@@ -546,6 +545,6 @@ angular.module('esn.avatar', [
     }
 
     function displayUserStatus() {
-      return self.objectType === 'user' ? !!self.avatar.id && !self.hideUserStatus : false;
+      return !!self.avatar.id && !self.hideUserStatus;
     }
   });
